@@ -3,7 +3,8 @@
 #  PROTO_SEDU_BUGGY compatible with boblight svn in sedu mode
 #  PROTO_SEDU sedu for fixed boblight trees like Speedy1985's boblight-for-raspberry or hyperion
 #  PROTO_TPM2 tpm2, it is only supported in hyperion, but it's much cleaner
-CFLAGS+=-DPROTOCOL=PROTO_TPM2
+#  PROTO_JUMPER automatically selects the protocol at startup based on jumper settings
+CFLAGS+=-DPROTOCOL=PROTO_JUMPER
 #uart baudrate
 CFLAGS+= -DBAUD=57600UL
 #spi clockrate in kHz
@@ -39,6 +40,13 @@ CFLAGS+= -DMOSINUM=PB3
 CFLAGS+= -DMISONUM=PB4
 CFLAGS+= -DSCKNUM=PB5
 CFLAGS+= -DSSNUM=PB2
+#jumper pins
+CFLAGS+= -DJUMPNUM1=PD2
+CFLAGS+= -DJUMPNUM2=PD3
+CFLAGS+= -DJUMPNUM3=PD4
+CFLAGS+= -DJUMPDDR=DDRD
+CFLAGS+= -DJUMPPORT=PORTD
+CFLAGS+= -DJUMPPIN=PIND
 #----------------------------------------
 #definition of available modes
 CFLAGS+=-DPROTO_SEDU_BUGGY=1

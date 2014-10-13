@@ -57,7 +57,7 @@ void seduLoop(){
   }
 }
 
-void tpm2loop(){
+void tpm2Loop(){
   uint8_t prefix[2] = {0xc9, 0xda}; //the second byte is type, but we're only accepting data frames (0xCA would be command and 0xAA would be requested response)
   for(;;){
     uint16_t channelCount;
@@ -75,7 +75,30 @@ void tpm2loop(){
 
 //TODO add a relay output to switch on/off the PSU of the leds
 
+uint8_t getProtoJumper(){
+  uint8_t ret;
+  //set the middle one to output low, the others to input with pull-up
+  JUMPDDR |= 1<JUMPNUM2;
+  JUMPPORT &= ~(1<<JUMPNUM2);
+  JUMPPORT |= 1<JUMPNUM1 | 1<JUMPNUM3;
+  
+  if( JUMPPIN & (1<<JUMPNUM1) ){
+    ret=PROTO_SEDU_BUGGY;
+  } else if( JUMPPIN & (1<<JUMPNUM3) ){
+    ret=PROTO_SEDU;
+  } else {
+    ret=PROTO_TPM2;
+  }
+  
+  JUMPDDR &= ~(1<<JUMPNUM2);
+  JUMPPORT &= ~(1<JUMPNUM1 | 1<JUMPNUM2 | 1<JUMPNUM3);
+  return ret;
+}
+
 int main(void){
+  #if PROTOCOL==PROTO_JUMPER
+  uint8_t autoproto;
+  #endif
 
   MCUSR = 0; 
   wdt_disable();
@@ -90,9 +113,15 @@ int main(void){
   #elif  PROTOCOL==PROTO_SEDU
   seduLoop();
   #elif PROTOCOL==PROTO_TPM2
-  tpm2loop();
+  tpm2Loop();
   #elif PROTOCOL==PROTO_JUMPER
-  //TODO set by jumper
+  autoproto = getProtoJumper();
+  if( autoproto == PROTO_SEDU_BUGGY )
+		buggySeduLoop();
+  else if( autoproto == PROTO_SEDU )
+		seduLoop();
+  else if( autoproto == PROTO_TPM2 )
+		tpm2Loop();
   #endif
   return 0;
 }
